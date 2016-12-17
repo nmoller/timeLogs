@@ -1,6 +1,7 @@
 #! /bin/bash
 
-root_folder=`pwd`
+root_folder=$(dirname $0)
+
 mydate=`date`
 
 cd ${root_folder}/.. && \
