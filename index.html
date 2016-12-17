@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+
+    <style>
+        .line {
+            /* Ce qu'il faut pour que la ligne ne soit pas pleine */
+            fill: none;
+            stroke: steelblue;
+            stroke-width: 1.5px;
+        }
+    </style>
+
+</head>
+<body>
+<div id="moodle"></div>
+<div id="dns"></div>
+<script type="text/javascript" src="js/Uqam.js"></script>
+<script>
+    
+    // Set the dimensions of the canvas / graph
+    var margin = {top: 30, right: 20, bottom: 30, left: 50},
+        width = 600 - margin.left - margin.right,
+        height = 270 - margin.top - margin.bottom;
+    
+    // Set the ranges
+    var x = d3.scaleTime().range([0, width]);
+    var y = d3.scaleLinear().range([height, 0]);
+    // Define the axes
+    var xAxis = d3.axisBottom(x);
+    var yAxis = d3.axisLeft(y);
+    // Define the line
+    var valueline = d3.line()
+        .x(function(d) { return x(d.time); })
+        .y(function(d) { return y(d.total); });
+    // Adds the svg canvas
+    var svg1 = d3.select("#moodle")
+        .append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+        .attr("transform",
+            "translate(" + margin.left + "," + margin.top + ")");
+    var moodleGraph = d3.csv("mdllogger.log", function(data) {
+        data.forEach( function(d) {
+            d.time = Uqam.dateParser(d.time);
+            hour = Uqam.splitHourMinutesSecs(d.time[3])
+            d.time = new Date(d.time[5], 
+                Uqam.convertMonthToJSInt(d.time[1]), 
+                d.time[2],
+                hour.hour, hour.minute, hour.second);
+            d.total = parseFloat(d.total.slice(2,7));
+        });
+        
+        // Scale the range of the data
+        x.domain(d3.extent(data, function(d) { return d.time; }));
+        y.domain(d3.extent(data, function(d) { return d.total; }));
+        //y.domain([0, d3.max(data, function(d) { return d.time; })]);
+
+        // Add the valueline path.
+        svg1.append("path")
+            .datum(data)
+            .attr("class", "line")
+            .attr("d", valueline);
+        // Add the X Axis
+        svg1.append("g")
+            .attr("class", "axis axis--x")
+            .attr("transform", "translate(0," + height + ")")
+            .call(xAxis);
+        // Add the Y Axis
+        svg1.append("g")
+            .attr("class", "axis axis--y")
+            .call(yAxis);
+        //
+    });
+
+    ////////////////////////////
+
+    // Adds the svg canvas
+    var svg = d3.select("#dns")
+        .append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+        .attr("transform",
+            "translate(" + margin.left + "," + margin.top + ")");
+    var moodleGraph = d3.csv("dnstime.log", function(data) {
+        data.forEach(function(d) {
+            d.time = Uqam.dateParser(d.time);
+            hour = Uqam.splitHourMinutesSecs(d.time[3])
+            d.time = new Date(d.time[5], 
+                Uqam.convertMonthToJSInt(d.time[1]), 
+                d.time[2],
+                hour.hour, hour.minute, hour.second);
+            d.total = parseFloat(d.total.slice(2,7));
+        });
+        
+        // Scale the range of the data
+        x.domain(d3.extent(data, function(d) { return d.time; }));
+        y.domain(d3.extent(data, function(d) { return d.total; }));
+        //y.domain([0, d3.max(data, function(d) { return d.time; })]);
+
+        // Add the valueline path.
+        svg.append("path")
+            .datum(data)
+            .attr("class", "line")
+            .attr("d", valueline);
+        // Add the X Axis
+        svg.append("g")
+            .attr("class", "axis axis--x")
+            .attr("transform", "translate(0," + height + ")")
+            .call(xAxis);
+        // Add the Y Axis
+        svg.append("g")
+            .attr("class", "axis axis--y")
+            .call(yAxis);
+        //
+    });
+</script>
+
+</body>
+</html>
