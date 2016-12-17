@@ -18,8 +18,40 @@
 </head>
 <body>
 <script>
+/**
+* Helper package pour obtenir les composants.
+*
+*/
+uqam = {
+    dateParser: function(dateString) {
+        return dateString.split(' ');
+    },
 
-    var strictIsoParse = d3.utcParse("%A %B %d %H:%M:%S EST %Y");
+    convertMonthToJSInt: function(month) {
+        var months = [
+            'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
+            'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+        ];
+        return months.indexOf(month);
+    },
+
+    splitHourMinutesSecs: function(hourString) {
+        var temp = hourString.split(':');
+
+        return {
+            hour: parseInt(temp[0]),
+            minute: parseInt(temp[1]),
+            second: parseInt(temp[2])
+        }
+
+    }
+};
+// Tests de la clase UQAM
+//var dateArray = uqam.dateParser('Tue Dec 13 22:08:09 EST 2016');
+//console.log(uqam.convertMonthToJSInt(dateArray[1]));
+//console.log(uqam.splitHourMinutesSecs(dateArray[3]));
+
+    var strictIsoParse = d3.utcParse("%Y %A %B %d %H:%M:%S");
 
     // Set the dimensions of the canvas / graph
     var margin = {top: 30, right: 20, bottom: 30, left: 50},
@@ -28,7 +60,7 @@
     
     // Set the ranges
     var x = d3.scaleLinear().range([0, width]);
-    var y = d3.scaleLinear().range([height, 0]);
+    var y = d3.scaleTime().range([height, 0]);
     // Define the axes
     var xAxis = d3.axisBottom(x);
     var yAxis = d3.axisLeft(y);
@@ -45,16 +77,20 @@
         .attr("transform",
             "translate(" + margin.left + "," + margin.top + ")");
     var psv = d3.csv("mdllogger.log", function(data) {
-        i=0;
         data.forEach(function(d) {
             var parseDate = d3.timeParse("%A %B %d %H:%M:%S EST %Y");
             // Parse the date / time
             // Tue Dec 13 22:08:09 EST 2016
             //On transforme a mb/s
             //d.time = parseDate(d.time);
-            d.time = i++;
+
+            d.time = uqam.dateParser(d.time);
+            hour = uqam.splitHourMinutesSecs(d.time[3])
+            d.time = new Date(d.time[5], 
+                uqam.convertMonthToJSInt(d.time[1]), 
+                d.time[2],
+                hour.hour, hour.minute, hour.second);
             d.total = parseFloat(d.total.slice(2,7));
-            //console.log(d.total);
         });
         
         console.log(data);
