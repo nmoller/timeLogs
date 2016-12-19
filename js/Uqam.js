@@ -27,6 +27,18 @@ Uqam = {
 
     },
 
+    /**
+     * COnvert 1m53.326s into 60+53.326 s
+     * @param timeString
+     * @returns {Number}
+     */
+    treatTimerTime: function(timeString){
+        var seconds = parseFloat(timeString.slice(2,7));
+        var minutes = parseFloat(timeString.slice(0,1));
+        minutes = minutes * 60;
+        return minutes + seconds;
+    },
+
     prepareD3Data: function(d){
         d.time = this.dateParser(d.time);
         hour = this.splitHourMinutesSecs(d.time[3])
@@ -34,7 +46,7 @@ Uqam = {
                 this.convertMonthToJSInt(d.time[1]),
                 d.time[2],
                 hour.hour, hour.minute, hour.second);
-        d.total = parseFloat(d.total.slice(2,7));
+        d.total = this.treatTimerTime(d.total);
     },
     
     addGraphAxes: function (svg, data) {
